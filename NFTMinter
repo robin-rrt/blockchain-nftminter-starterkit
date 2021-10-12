@@ -33,7 +33,7 @@ function mintNFT(string memory _tokenURI) public {
  function _mintNFT(address _to, uint256 _tokenId, string memory _tokenURI) private{
             _mint(_to, _tokenId);
             _setTokenURI(_tokenId, _tokenURI);
-            _tokenId += 1;
+            _tokenID += 1;
         }
 
 }
