@@ -1,0 +1,39 @@
+// SPDX-License-Identifier: GPL-3.0
+
+pragma solidity ^0.8.0;
+
+//import ERC721URIStorage.sol from OpenZeppelin
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+
+//create a contract NFTMINTERRINKEBY and inherit from ERC721URISTORAGE
+contract NFTMinter is ERC721URIStorage{
+ 
+//initialize variable for tracking _tokenID
+ uint256 _tokenID;
+
+ 
+// add constructor
+  constructor() ERC721("NFTMinter", "NFTM") {
+    _tokenID = 0;
+ } 
+ //create an event when NFT is minted args(tokenID, indexed NFTOwner, imageURL)
+ event NFTMinted(uint256 _tokenId, address indexed NFTOwner, string imageURL);
+
+
+function mintNFT(string memory _tokenURI) public {
+     _mintNFT(msg.sender, _tokenID, _tokenURI);
+     emit NFTMinted(_tokenID, msg.sender, _tokenURI);
+     
+}
+ 
+ 
+ //memory = RAM (lesser gas) | storage = storing on the blockchain (more gas)
+ 
+ //function _mintNFT() private
+ function _mintNFT(address _to, uint256 _tokenId, string memory _tokenURI) private{
+            _mint(_to, _tokenId);
+            _setTokenURI(_tokenId, _tokenURI);
+            _tokenId += 1;
+        }
+
+}
