@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-
+//contract address = 0x9a27677ed55CfA9Fb84549032baf035b55df6A74
 pragma solidity ^0.8.0;
 
 //import ERC721URIStorage.sol from OpenZeppelin
@@ -19,6 +19,10 @@ contract NFTMinter is ERC721URIStorage{
  //create an event when NFT is minted args(tokenID, indexed NFTOwner, imageURL)
  event NFTMinted(uint256 _tokenId, address indexed NFTOwner, string imageURL);
 
+
+ function getTokenID() public view returns(uint256){
+     return _tokenID;
+ }
 
 function mintNFT(string memory _tokenURI) public {
      _mintNFT(msg.sender, _tokenID, _tokenURI);
