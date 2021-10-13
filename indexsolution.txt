@@ -52,24 +52,13 @@
 	  //initialize var contract and var accounts, assign NFTMinterAddress
 	  var contract;
 	  var accounts;
-	  const NFTMinterAddress = "0x9a27677ed55CfA9Fb84549032baf035b55df6A74";
+	  const NFTMinterAddress = "0x84a9A83F833a34360AEB053Faaf3dc0A87c59EF8";
 
 
       //add NFTMinter ABI
 	  const NFTMinterABI = [
 	{
-		"inputs": [
-			{
-				"internalType": "string",
-				"name": "name_",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
-				"name": "symbol_",
-				"type": "string"
-			}
-		],
+		"inputs": [],
 		"stateMutability": "nonpayable",
 		"type": "constructor"
 	},
@@ -121,6 +110,31 @@
 			}
 		],
 		"name": "ApprovalForAll",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "_tokenId",
+				"type": "uint256"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "NFTOwner",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "imageURL",
+				"type": "string"
+			}
+		],
+		"name": "NFTMinted",
 		"type": "event"
 	},
 	{
@@ -205,6 +219,19 @@
 		"type": "function"
 	},
 	{
+		"inputs": [],
+		"name": "getTokenID",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
 		"inputs": [
 			{
 				"internalType": "address",
@@ -226,6 +253,19 @@
 			}
 		],
 		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "_tokenURI",
+				"type": "string"
+			}
+		],
+		"name": "mintNFT",
+		"outputs": [],
+		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
@@ -480,24 +520,28 @@
 			try{
 				//calling tokenID to redirect on OPENSEA
 				const tokenID = await contract.methods.getTokenID().call({from: accounts[0]}); //calling tokenID to redirect on OPENSEA
-				console.log("Token ID: ", tokenID); //assignment if does not work
+				console.log("Token ID: ", tokenID);
 				//actually minting NFT.
-				await contract.methods.mintNFT(metadata).send({from: accounts[0]}) 
-				//getter (readonly - contract.methods.getter(args).call({from: accounts[0]})) and setter (transaction - contract.methods.setter(args).send({from: accounts[0]}))
-				//Action on receving transaction hash
+				await contract.methods.mintNFT(metadata).send({from: accounts[0]})
 				.on('transactionHash', function(hash){
     				alert("Your transaction can be found at: "+"https://rinkeby.etherscan.io/tx/"+hash);
 					/*JQuery*/ $("#transactionhash")
 					.append("<b>Your transaction can be found at: <br>"+"<a href='https://rinkeby.etherscan.io/tx/"+hash+"'>https://rinkeby.etherscan.io/tx/"+hash+"</a></b");
 				})
-				//Action on receiving a receipt of successful transaction
+				.on('receipt', function(receipt){
+    			// receipt example
+    			console.log(receipt);
 				alert("Your transaction has been confirmed at: " + "https://rinkeby.etherscan.io/tx/"+receipt.transactionHash);
 				$("#opensea")
 					.append("<b>Your NFT can be viewed on OpenSea at: <br>"+"<a href='https://testnets.opensea.io/assets/"+NFTMinterAddress+"/"+tokenID+"'>https://testnets.opensea.io/assets/"+NFTMinterAddress+"/"+tokenID+"</a></b");
-
+				})
 				//Action on Error
 				//assignment https://web3js.readthedocs.io/en/v1.5.2/web3-eth-contract.html#methods-mymethod-send
-      	
+				.on('error', function(error, receipt) { // If the transaction was rejected by the network with a receipt, the second parameter will be the receipt.
+    				console.log("Error. The transaction has been rejected.");
+					console.log(receipt);
+					alert("The transaction was rejected");
+				});	
 			} catch (e) {
         	console.log('Error while minting function was called ', e)
       		}
