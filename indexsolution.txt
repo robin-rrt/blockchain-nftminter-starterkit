@@ -1,0 +1,508 @@
+<html>
+  <head>
+	<title>NFT Minter on Testnet - Mint your NFT for free!</title>
+    <!-- Moralis SDK code -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    <script src="https://unpkg.com/moralis/dist/moralis.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<link rel="stylesheet" href="styles.css">
+
+  </head>
+  <body>
+    <h1>NFT Minter for Beginners</h1>
+	<h2 id="h2"></h2>
+	
+    <button class="btns" id="btn-connect">Connect Metamask</button>
+	
+	<br><br>
+	<div class=container-grey>
+	<br><br>
+    <input type="text" name="metadataName" id="metadataName" placeholder="Title">
+    <br><br>
+    <textarea name="metadataDescription" id="metadataDescription" col="30" rows="10" placeholder="Description"></textarea>
+	<br><br>
+    <input type="file" name="fileInput" id="fileInput">
+    <br><br>
+    <button class="btns" id="btn-mint" onclick="mint()">MINT NFT</button>
+</div>
+	<div id="transactionhash"></div>
+	<div id="opensea"></div> <!-- Assignment --> 
+	
+<script>
+	// on click of Metamask button login() function is called, and connected address is displayed
+	$(document).ready(function(){
+		let flag=0;
+	  $("#btn-connect").click(async function(){ 
+		  const connectedAccount = await login();
+		  console.log(connectedAccount);
+		  if(flag==0){
+		  $("#h2").append("<b>Welcome<br>"+connectedAccount+"</b>.");
+		  flag=1;
+		  }
+		  $("#btn-connect").hide();
+	  });
+	});
+	</script>
+
+    <script>
+      // connect to Moralis server
+      Moralis.initialize("DFxrxNdKMK8P0gSaD08AE29atUaGX7nHPxsuVCy2");
+	  Moralis.serverURL = "https://czvhzc4pphqs.grandmoralis.com:2053/server";
+
+	  //initialize var contract and var accounts, assign NFTMinterAddress
+	  var contract;
+	  var accounts;
+	  const NFTMinterAddress = "0x9a27677ed55CfA9Fb84549032baf035b55df6A74";
+
+
+      //add NFTMinter ABI
+	  const NFTMinterABI = [
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "name_",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "symbol_",
+				"type": "string"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "owner",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "approved",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "Approval",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "owner",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "operator",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "bool",
+				"name": "approved",
+				"type": "bool"
+			}
+		],
+		"name": "ApprovalForAll",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "Transfer",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "approve",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "owner",
+				"type": "address"
+			}
+		],
+		"name": "balanceOf",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "getApproved",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "owner",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "operator",
+				"type": "address"
+			}
+		],
+		"name": "isApprovedForAll",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "name",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "ownerOf",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "safeTransferFrom",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "bytes",
+				"name": "_data",
+				"type": "bytes"
+			}
+		],
+		"name": "safeTransferFrom",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "operator",
+				"type": "address"
+			},
+			{
+				"internalType": "bool",
+				"name": "approved",
+				"type": "bool"
+			}
+		],
+		"name": "setApprovalForAll",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "bytes4",
+				"name": "interfaceId",
+				"type": "bytes4"
+			}
+		],
+		"name": "supportsInterface",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "symbol",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "tokenURI",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "transferFrom",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	}
+]
+	  
+      //Connect and login  
+      login = async() => {
+		  //Moralis Web3 authenticate user with Metamask and login.
+		  Moralis.Web3.authenticate().then(function(user) {
+			console.log("Logged in");
+          })
+		  //Enable web3 with Moralis
+		  const web3 = await Moralis.Web3.enable();
+		  //initialize contract with web3.js - web3.eth.Contract(ABI, address)
+		  contract = new web3.eth.Contract(NFTMinterABI, NFTMinterAddress); //web3.eth.Contract(ABI, Address)
+		  console.log(contract);
+		  //get accounts to be shown on frontend - accounts[0]
+		  accounts = await web3.eth.getAccounts();
+		  currentAccount = accounts[0];
+		  //return currentAccount
+		  return currentAccount;
+			
+      }
+
+      //Upload Image to IPFS
+      uploadImage = async() => {
+		//TBD
+			//get file data from browser
+			const data = fileInput.files[0]
+			//initialize Moralis object for file
+			const file = new Moralis.File(data.name, data)
+			//save file to IPFS
+			await file.saveIPFS();
+        	console.log(file.ipfs());
+			alert("Image uploaded to IPFS");
+			//return IPFS link to file
+			return file.ipfs() //returns the link to the IPFS file
+
+      }
+      
+      //Upload Metadata to IPFS
+      uploadMetadata = async (imageURL) => {
+		  //get name of image from HTML form
+		  const name = document.getElementById('metadataName').value;
+		  //get description from HTML form
+		  const description = document.getElementById('metadataDescription').value;
+		  //constuct metadata JSON (name : name, description : description, image: imageURL)
+		  const metadata = {
+              "name" : name,
+              "description" : description,
+              "image" : imageURL
+          }
+		  //initialize Moralis object for file
+		  const file = new Moralis.File("file.json", {base64 : btoa(JSON.stringify(metadata))});
+		  //save file to IPFS
+		  await file.saveIPFS();
+		  console.log(file.ipfs());
+		  alert("Metadata uploaded to IPFS", file.ipfs());
+		  //return IPFS link to file
+		  return file.ipfs();
+      }
+
+      //Mint NFT with IPFS Metadata
+	  //IPFS - Inter Planetary File System
+      mint = async() => {
+		  //upload image
+          const image = await uploadImage();
+		  //upload metadata
+          const metadata = await uploadMetadata(image);
+		  /*
+		  name: Abcd
+		  description: hello world
+		  uri: hello.jpeg
+		  */
+
+		  //if contract !== undefined, then call mintNFT() solidity function.
+		  if(contract!=='undefined'){
+			try{
+				//calling tokenID to redirect on OPENSEA
+				const tokenID = await contract.methods.getTokenID().call({from: accounts[0]}); //calling tokenID to redirect on OPENSEA
+				console.log("Token ID: ", tokenID); //assignment if does not work
+				//actually minting NFT.
+				await contract.methods.mintNFT(metadata).send({from: accounts[0]}) 
+				//getter (readonly - contract.methods.getter(args).call({from: accounts[0]})) and setter (transaction - contract.methods.setter(args).send({from: accounts[0]}))
+				//Action on receving transaction hash
+				.on('transactionHash', function(hash){
+    				alert("Your transaction can be found at: "+"https://rinkeby.etherscan.io/tx/"+hash);
+					/*JQuery*/ $("#transactionhash")
+					.append("<b>Your transaction can be found at: <br>"+"<a href='https://rinkeby.etherscan.io/tx/"+hash+"'>https://rinkeby.etherscan.io/tx/"+hash+"</a></b");
+				})
+				//Action on receiving a receipt of successful transaction
+				alert("Your transaction has been confirmed at: " + "https://rinkeby.etherscan.io/tx/"+receipt.transactionHash);
+				$("#opensea")
+					.append("<b>Your NFT can be viewed on OpenSea at: <br>"+"<a href='https://testnets.opensea.io/assets/"+NFTMinterAddress+"/"+tokenID+"'>https://testnets.opensea.io/assets/"+NFTMinterAddress+"/"+tokenID+"</a></b");
+
+				//Action on Error
+				//assignment https://web3js.readthedocs.io/en/v1.5.2/web3-eth-contract.html#methods-mymethod-send
+      	
+			} catch (e) {
+        	console.log('Error while minting function was called ', e)
+      		}
+	}
+}
+    </script>
+  </body>
+</html>
